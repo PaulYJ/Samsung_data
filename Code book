@@ -1,0 +1,54 @@
+run_analysis <- function() {
+## reading raw files
+library("reshape2")
+library("stats")
+test_raw <<- read.table("./test/X_test.txt")
+train_raw<<- read.table("./train/X_train.txt")
+sub_test <<- read.table("./test/subject_test.txt")
+act_test <<- read.table("./test/y_test.txt")
+feature_name <<- read.table("./features.txt")
+act_train<<- read.table("./train/y_train.txt")
+sub_train<<- read.table("./train/subject_train.txt")
+act_name <<-read.table("./activity_labels.txt")
+
+## Making the list containing only mean and std info
+mean_list <- grepl("mean()",feature_name[,2],fixed=T)
+std_list <- grepl("std()",feature_name[,2],fixed=T)
+extract_list <- as.logical(mean_list + std_list)
+test_extract <- test_raw[,extract_list]
+feature_name_extract <- feature_name[extract_list,2]
+feature_name_extract <- as.character(feature_name_extract)
+test_extract <- test_raw[,extract_list]
+train_extract <- train_raw[,extract_list]
+colnames(test_extract) <- feature_name_extract
+colnames(train_extract) <- feature_name_extract
+
+##Merging the subjects and activity
+seq_temp <- seq(length(act_test[,1]))
+act_test <- cbind(seq_temp,act_test)
+act_test_temp <- merge(act_test,act_name,by.x = "V1",by.y = "V1",all.x=T,sort=F)
+act_test_name <- act_test_temp[order(act_test_temp[,2]),]
+dataset_type <- rep("Test",length(act_test[,1]))
+test_extract_final <- cbind(sub_test,act_test_name[,3],dataset_type,test_extract)
+colnames(test_extract_final)[1:3] <- c("Subject","Activity","Data.Type")
+
+seq_temp <- seq(length(act_train[,1]))
+act_train <- cbind(seq_temp,act_train)
+act_train_temp <- merge(act_train,act_name,by.x = "V1",by.y = "V1",all.x=T,sort=F)
+act_train_name <- act_train_temp[order(act_train_temp[,2]),]
+dataset_type <- rep("Train",length(act_train[,1]))
+train_extract_final <- cbind(sub_train,act_train_name[,3],dataset_type,train_extract)
+colnames(train_extract_final)[1:3] <- c("Subject","Activity","Data.Type")
+
+extract_final <<- rbind(test_extract_final,train_extract_final)
+
+##Getting the output, calculating mean for each activity of each subject
+temp <- split(extract_final[,4:69],list(extract_final$Subject,extract_final$Activity))
+temp2 <- sapply(temp,colMeans)
+temp3 <- as.data.frame(t(temp2))
+temp4 <- ddply(extract_final, .(Subject,Activity,Data.Type), nrow)
+temp5 <- temp4[order(temp4[,2]),]
+colnames(temp5) <- c("Subject", "Activity", "Data.Type","NumberOfTrials")
+output <- as.data.frame (cbind(temp5,temp3[,1:66]))
+output
+}

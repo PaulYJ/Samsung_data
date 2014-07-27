@@ -5,7 +5,7 @@ Getting and Cleaning Data course Project
 
 ### Environments:
 
-    The script in the code book was tested in R-studio 0.98.953, installed in a Windows 8 x64 system. "reshape2"     and   "stat" library from R-studio are required for the code to run.
+    The script in the analyzer was tested in R-studio 0.98.953, installed in a Windows 8 x64 system. "reshape2"     and   "stat" library from R-studio are required for the code to run.
     
     
 ### Functions of the code book: 
